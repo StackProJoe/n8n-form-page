@@ -511,9 +511,9 @@
             const formData = new FormData();
             
             // SOLUTION 1: Try these first (most likely correct)
-            formData.append('field_0', legalType);      // First dropdown
-            formData.append('field_1', documentType);   // Second dropdown  
-            formData.append('pdf', pdfFile, pdfFile.name); // PDF upload
+            formData.append('What type of legal instrument?', legalType);
+            formData.append('Original or Amended?', documentType);
+            formData.append('pdf', pdfFile, pdfFile.name);
             
             // Add the extra fields that n8n automatically includes
             formData.append('formMode', 'production');
