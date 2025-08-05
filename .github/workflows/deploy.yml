@@ -18,8 +18,8 @@ jobs:
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/pages-action@v1
         with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          apiToken: ${{ SECRETS.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ SECRETS.CLOUDFLARE_ACCOUNT_ID }}
           projectName: legal-document-form
           directory: .
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}
