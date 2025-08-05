@@ -518,13 +518,41 @@
                 return;
             }
             
-            // Create FormData
+            // Debug: Log file information
+            console.log('File details:', {
+                name: pdfFile.name,
+                size: pdfFile.size,
+                type: pdfFile.type,
+                lastModified: pdfFile.lastModified
+            });
+            
+            // Create FormData exactly like n8n's webform would
             const formData = new FormData();
+            
+            // Add form fields first
             formData.append('field-0', legalType);
             formData.append('field-1', documentType);
-            formData.append('pdf', pdfFile, pdfFile.name); // n8n expects 'pdf' as field name
-            formData.append('formMode', 'production');
-            formData.append('submittedAt', new Date().toISOString());
+            
+            // Add the PDF file without explicit filename (let browser handle it)
+            formData.append('pdf', pdfFile);
+            
+            // Don't add these extra fields - they might interfere
+            // formData.append('formMode', 'production');
+            // formData.append('submittedAt', new Date().toISOString());
+            
+            // Debug: Log FormData contents
+            console.log('FormData contents:');
+            for (let [key, value] of formData.entries()) {
+                if (value instanceof File) {
+                    console.log(`${key}:`, {
+                        name: value.name,
+                        size: value.size,
+                        type: value.type
+                    });
+                } else {
+                    console.log(`${key}:`, value);
+                }
+            }
             
             // Update button state
             submitBtn.textContent = 'Submitting...';
@@ -533,7 +561,8 @@
             try {
                 const response = await fetch('https://n8nf.stackhomelab.com/form/d73510bd-3ca5-4822-b155-3d9c3095e1ae', {
                     method: 'POST',
-                    body: formData
+                    body: formData,
+                    // Don't set Content-Type header - let browser set it with boundary
                 });
                 
                 if (response.ok) {
