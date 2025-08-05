@@ -281,6 +281,97 @@
             transform: translateY(0);
         }
 
+        .file-upload-area {
+            border: 2px dashed #e1e8ed;
+            border-radius: 12px;
+            padding: 40px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #fafbfc;
+        }
+
+        .file-upload-area:hover {
+            border-color: #667eea;
+            background: #f8f9ff;
+        }
+
+        .file-upload-area.dragover {
+            border-color: #667eea;
+            background: #f0f2ff;
+            transform: scale(1.02);
+        }
+
+        .upload-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+            opacity: 0.6;
+        }
+
+        .upload-text {
+            font-size: 16px;
+            margin-bottom: 5px;
+            color: #333;
+        }
+
+        .upload-subtext {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .file-preview {
+            border: 2px solid #27ae60;
+            border-radius: 12px;
+            padding: 15px;
+            background: #f8fff9;
+            margin-top: 10px;
+        }
+
+        .file-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .file-icon {
+            font-size: 24px;
+        }
+
+        .file-details {
+            flex: 1;
+        }
+
+        .file-name {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 2px;
+        }
+
+        .file-size {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .remove-file {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .remove-file:hover {
+            background: #c0392b;
+            transform: scale(1.1);
+        }
+
         @media (max-width: 768px) {
             .container {
                 flex-direction: column;
@@ -338,8 +429,30 @@
                         <option value="amendment">Amendment</option>
                     </select>
                 </div>
+
+                <div class="form-group">
+                    <label class="form-label">Upload PDF Document</label>
+                    <div class="file-upload-area" id="fileUploadArea">
+                        <div class="upload-icon">📁</div>
+                        <div class="upload-text">
+                            <strong>Click to upload</strong> or drag and drop
+                        </div>
+                        <div class="upload-subtext">PDF files only (Max 10MB)</div>
+                        <input type="file" id="pdfFile" accept=".pdf" hidden required>
+                    </div>
+                    <div class="file-preview" id="filePreview" style="display: none;">
+                        <div class="file-info">
+                            <div class="file-icon">📄</div>
+                            <div class="file-details">
+                                <div class="file-name" id="fileName"></div>
+                                <div class="file-size" id="fileSize"></div>
+                            </div>
+                            <button type="button" class="remove-file" id="removeFile">×</button>
+                        </div>
+                    </div>
+                </div>
                 
-                <button type="submit" class="submit-btn">Create Document</button>
+                <button type="submit" class="submit-btn">Submit Form</button>
                 
                 <div class="success-message" id="successMessage">
                     ✓ Form Submitted Successfully! Your response has been recorded.
@@ -387,7 +500,7 @@
             
             setTimeout(() => {
                 successMessage.classList.add('show');
-                submitBtn.textContent = 'Create Document';
+                submitBtn.textContent = 'Submit Form';
                 submitBtn.disabled = false;
                 
                 // Hide success message after 5 seconds
@@ -396,6 +509,80 @@
                 }, 5000);
             }, 1000);
         });
+
+        // File upload handling
+        const fileUploadArea = document.getElementById('fileUploadArea');
+        const fileInput = document.getElementById('pdfFile');
+        const filePreview = document.getElementById('filePreview');
+        const fileName = document.getElementById('fileName');
+        const fileSize = document.getElementById('fileSize');
+        const removeFileBtn = document.getElementById('removeFile');
+
+        // Click to upload
+        fileUploadArea.addEventListener('click', () => {
+            fileInput.click();
+        });
+
+        // Drag and drop
+        fileUploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            fileUploadArea.classList.add('dragover');
+        });
+
+        fileUploadArea.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            fileUploadArea.classList.remove('dragover');
+        });
+
+        fileUploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            fileUploadArea.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFileSelect(files[0]);
+            }
+        });
+
+        // File input change
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFileSelect(e.target.files[0]);
+            }
+        });
+
+        // Handle file selection
+        function handleFileSelect(file) {
+            if (file.type !== 'application/pdf') {
+                alert('Please select a PDF file only.');
+                return;
+            }
+            
+            if (file.size > 10 * 1024 * 1024) { // 10MB limit
+                alert('File size must be less than 10MB.');
+                return;
+            }
+
+            fileName.textContent = file.name;
+            fileSize.textContent = formatFileSize(file.size);
+            filePreview.style.display = 'block';
+            fileUploadArea.style.display = 'none';
+        }
+
+        // Remove file
+        removeFileBtn.addEventListener('click', () => {
+            fileInput.value = '';
+            filePreview.style.display = 'none';
+            fileUploadArea.style.display = 'block';
+        });
+
+        // Format file size
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
     </script>
 </body>
 </html>
