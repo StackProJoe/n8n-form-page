@@ -22,4 +22,4 @@ jobs:
           accountId: ${{ SECRETS.CLOUDFLARE_ACCOUNT_ID }}
           projectName: legal-document-form
           directory: .
-          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+          gitHubToken: ${{ SECRETS.GITHUB_TOKEN }}
