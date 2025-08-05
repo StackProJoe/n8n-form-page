@@ -1,0 +1,2 @@
+# Redirect API calls to your n8n instance
+/api/submit https://n8nf.stackhomelab.com/form/d73510bd-3ca5-4822-b155-3d9c3095e1ae 200
