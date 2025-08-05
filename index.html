@@ -463,220 +463,189 @@
 
     <script>
         // Form validation and styling
-        const selects = document.querySelectorAll('.form-select');
-        const form = document.getElementById('legalForm');
-        const successMessage = document.getElementById('successMessage');
-        const errorMessage = document.getElementById('errorMessage');
+const selects = document.querySelectorAll('.form-select');
+const form = document.getElementById('n8n-form'); // Updated to match your form ID
+const successMessage = document.getElementById('successMessage');
+const errorMessage = document.getElementById('errorMessage');
 
-        selects.forEach(select => {
-            select.addEventListener('change', function() {
-                if (this.value) {
-                    this.classList.add('valid');
-                    // Add validation icon
-                    let existingIcon = this.parentNode.querySelector('.validation-icon');
-                    if (!existingIcon) {
-                        const icon = document.createElement('div');
-                        icon.className = 'validation-icon';
-                        icon.innerHTML = '✓';
-                        this.parentNode.appendChild(icon);
-                    }
-                } else {
-                    this.classList.remove('valid');
-                    let existingIcon = this.parentNode.querySelector('.validation-icon');
-                    if (existingIcon) {
-                        existingIcon.remove();
-                    }
-                }
-            });
-        });
-
-        // FINAL FIX: Form submission with correct n8n field names
-        form.addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            const submitBtn = form.querySelector('.submit-btn');
-            
-            // Get form values
-            const legalType = document.getElementById('legalType').value;
-            const documentType = document.getElementById('documentType').value;
-            const pdfFile = document.getElementById('pdfFile').files[0];
-            
-            // Validate all fields
-            if (!legalType || !documentType || !pdfFile) {
-                showError('Please fill in all fields and upload a PDF file.');
-                return;
+selects.forEach(select => {
+    select.addEventListener('change', function() {
+        if (this.value) {
+            this.classList.add('valid');
+            // Add validation icon
+            let existingIcon = this.parentNode.querySelector('.validation-icon');
+            if (!existingIcon) {
+                const icon = document.createElement('div');
+                icon.className = 'validation-icon';
+                icon.innerHTML = '✓';
+                this.parentNode.appendChild(icon);
             }
-            
-            // Create FormData with EXACT field names from your n8n form
-            const formData = new FormData();
-            
-            // SOLUTION 1: Try these first (most likely correct)
-            formData.append('What type of legal instrument?', legalType);
-            formData.append('Original or Amended?', documentType);
-            formData.append('pdf', pdfFile, pdfFile.name);
-            
-            // Add the extra fields that n8n automatically includes
-            formData.append('formMode', 'production');
-            formData.append('submittedAt', new Date().toISOString());
-            
-            // Update button state
-            submitBtn.textContent = 'Submitting...';
-            submitBtn.disabled = true;
-            
-            try {
-                // Submit to n8n webhook
-                const response = await fetch('https://n8nf.stackhomelab.com/form/d73510bd-3ca5-4822-b155-3d9c3095e1ae', {
-                    method: 'POST',
-                    body: formData
-                });
-                
-                if (response.ok) {
-                    showSuccess();
-                    form.reset();
-                    resetFileUpload();
-                    resetValidationIcons();
-                } else {
-                    const errorText = await response.text();
-                    console.error('Server error:', response.status, errorText);
-                    throw new Error(`Server error: ${response.status}`);
-                }
-            } catch (error) {
-                console.error('Form submission error:', error);
-                showError('There was an error submitting your form. Please try again.');
-            } finally {
-                submitBtn.textContent = 'Submit Form';
-                submitBtn.disabled = false;
+        } else {
+            this.classList.remove('valid');
+            let existingIcon = this.parentNode.querySelector('.validation-icon');
+            if (existingIcon) {
+                existingIcon.remove();
             }
-        });
-
-        // ALTERNATIVE SOLUTIONS to try if above doesn't work:
-
-        // SOLUTION 2: If field_0 doesn't work, try these field names instead:
-        /*
-        formData.append('field-0', legalType);
-        formData.append('field-1', documentType);
-        formData.append('pdf', pdfFile, pdfFile.name);
-        */
-
-        // SOLUTION 3: If numbered fields don't work, try the question text:
-        /*
-        formData.append('What type of legal instrument?', legalType);
-        formData.append('Original or Amended?', documentType);
-        formData.append('pdf', pdfFile, pdfFile.name);
-        */
-
-        // SOLUTION 4: Generic field names:
-        /*
-        formData.append('dropdown1', legalType);
-        formData.append('dropdown2', documentType);
-        formData.append('file', pdfFile, pdfFile.name);
-        */
-
-        // File upload handling
-        const fileUploadArea = document.getElementById('fileUploadArea');
-        const fileInput = document.getElementById('pdfFile');
-        const filePreview = document.getElementById('filePreview');
-        const fileName = document.getElementById('fileName');
-        const fileSize = document.getElementById('fileSize');
-        const removeFileBtn = document.getElementById('removeFile');
-
-        // Click to upload
-        fileUploadArea.addEventListener('click', () => {
-            fileInput.click();
-        });
-
-        // Drag and drop
-        fileUploadArea.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            fileUploadArea.classList.add('dragover');
-        });
-
-        fileUploadArea.addEventListener('dragleave', (e) => {
-            e.preventDefault();
-            fileUploadArea.classList.remove('dragover');
-        });
-
-        fileUploadArea.addEventListener('drop', (e) => {
-            e.preventDefault();
-            fileUploadArea.classList.remove('dragover');
-            const files = e.dataTransfer.files;
-            if (files.length > 0) {
-                handleFileSelect(files[0]);
-            }
-        });
-
-        // File input change
-        fileInput.addEventListener('change', (e) => {
-            if (e.target.files.length > 0) {
-                handleFileSelect(e.target.files[0]);
-            }
-        });
-
-        // Handle file selection
-        function handleFileSelect(file) {
-            if (file.type !== 'application/pdf') {
-                showError('Please select a PDF file only.');
-                return;
-            }
-            
-            if (file.size > 10 * 1024 * 1024) { // 10MB limit
-                showError('File size must be less than 10MB.');
-                return;
-            }
-
-            fileName.textContent = file.name;
-            fileSize.textContent = formatFileSize(file.size);
-            filePreview.style.display = 'block';
-            fileUploadArea.style.display = 'none';
         }
+    });
+});
 
-        // Remove file
-        removeFileBtn.addEventListener('click', () => {
+// FIXED: Form submission with correct field IDs and names
+form.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const submitBtn = form.querySelector('.submit-btn');
+    
+    // Get form values using CORRECT IDs from your HTML
+    const legalType = document.getElementById('field-0').value;
+    const documentType = document.getElementById('field-1').value;
+    const pdfFile = document.getElementById('field-2').files[0];
+    
+    // Validate all fields
+    if (!legalType || !documentType || !pdfFile) {
+        showError('Please fill in all fields and upload a PDF file.');
+        return;
+    }
+    
+    // Create FormData with field names that match your HTML
+    const formData = new FormData();
+    
+    // Use the exact field names from your HTML form
+    formData.append('field-0', legalType);
+    formData.append('field-1', documentType);
+    formData.append('field-2', pdfFile, pdfFile.name);
+    
+    // Add the extra fields that n8n automatically includes
+    formData.append('formMode', 'production');
+    formData.append('submittedAt', new Date().toISOString());
+    
+    // Update button state
+    submitBtn.textContent = 'Submitting...';
+    submitBtn.disabled = true;
+    
+    try {
+        // Submit to n8n webhook
+        const response = await fetch('https://n8nf.stackhomelab.com/form/d73510bd-3ca5-4822-b155-3d9c3095e1ae', {
+            method: 'POST',
+            body: formData
+        });
+        
+        if (response.ok) {
+            showSuccess();
+            form.reset();
             resetFileUpload();
-        });
-
-        // Helper functions
-        function resetFileUpload() {
-            fileInput.value = '';
-            filePreview.style.display = 'none';
-            fileUploadArea.style.display = 'block';
+            resetValidationIcons();
+        } else {
+            const errorText = await response.text();
+            console.error('Server error:', response.status, errorText);
+            throw new Error(`Server error: ${response.status}`);
         }
+    } catch (error) {
+        console.error('Form submission error:', error);
+        showError('There was an error submitting your form. Please try again.');
+    } finally {
+        submitBtn.textContent = 'Submit Form';
+        submitBtn.disabled = false;
+    }
+});
 
-        function resetValidationIcons() {
-            const icons = document.querySelectorAll('.validation-icon');
-            icons.forEach(icon => icon.remove());
-            selects.forEach(select => select.classList.remove('valid'));
-        }
+// File upload handling - Updated to use correct ID
+const fileUploadArea = document.getElementById('fileUploadArea');
+const fileInput = document.getElementById('field-2'); // Changed from 'pdfFile' to 'field-2'
+const filePreview = document.getElementById('filePreview');
+const fileName = document.getElementById('fileName');
+const fileSize = document.getElementById('fileSize');
+const removeFileBtn = document.getElementById('removeFile');
 
-        function showSuccess() {
-            hideMessages();
-            successMessage.classList.add('show');
-            setTimeout(() => {
-                successMessage.classList.remove('show');
-            }, 5000);
-        }
+// Click to upload
+fileUploadArea.addEventListener('click', () => {
+    fileInput.click();
+});
 
-        function showError(message) {
-            hideMessages();
-            errorMessage.textContent = message;
-            errorMessage.classList.add('show');
-            setTimeout(() => {
-                errorMessage.classList.remove('show');
-            }, 5000);
-        }
+// Drag and drop
+fileUploadArea.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    fileUploadArea.classList.add('dragover');
+});
 
-        function hideMessages() {
-            successMessage.classList.remove('show');
-            errorMessage.classList.remove('show');
-        }
+fileUploadArea.addEventListener('dragleave', (e) => {
+    e.preventDefault();
+    fileUploadArea.classList.remove('dragover');
+});
 
-        function formatFileSize(bytes) {
-            if (bytes === 0) return '0 Bytes';
-            const k = 1024;
-            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-            const i = Math.floor(Math.log(bytes) / Math.log(k));
-            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-        }
+fileUploadArea.addEventListener('drop', (e) => {
+    e.preventDefault();
+    fileUploadArea.classList.remove('dragover');
+    const files = e.dataTransfer.files;
+    if (files.length > 0) {
+        handleFileSelect(files[0]);
+    }
+});
+
+// File input change
+fileInput.addEventListener('change', (e) => {
+    if (e.target.files.length > 0) {
+        handleFileSelect(e.target.files[0]);
+    }
+});
+
+// Handle file selection
+function handleFileSelect(file) {
+    if (file.type !== 'application/pdf') {
+        showError('Please select a PDF file only.');
+        return;
+    }
+    
+    if (file.size > 10 * 1024 * 1024) { // 10MB limit
+        showError('File size must be less than 10MB.');
+        return;
+    }
+
+    fileName.textContent = file.name;
+    fileSize.textContent = formatFileSize(file.size);
+    filePreview.style.display = 'block';
+    fileUploadArea.style.display = 'none';
+}
+
+// Remove file
+removeFileBtn.addEventListener('click', () => {
+    resetFileUpload();
+});
+
+// Helper functions
+function resetFileUpload() {
+    fileInput.value = '';
+    filePreview.style.display = 'none';
+    fileUploadArea.style.display = 'block';
+}
+
+function resetValidationIcons() {
+    const icons = document.querySelectorAll('.validation-icon');
+    icons.forEach(icon => icon.remove());
+    selects.forEach(select => select.classList.remove('valid'));
+}
+
+function showSuccess() {
+    hideMessages();
+    successMessage.classList.add('show');
+    setTimeout(() => {
+        successMessage.classList.remove('show');
+    }, 5000);
+}
+
+function showError(message) {
+    hideMessages();
+    errorMessage.textContent = message;
+    errorMessage.classList.add('show');
+    setTimeout(() => {
+        errorMessage.classList.remove('show');
+    }, 5000);
+}
+
+function hideMessages() {
+    successMessage.classList.remove('show');
+    errorMessage.classList.remove('show');
+}
     </script>
 </body>
 </html>
