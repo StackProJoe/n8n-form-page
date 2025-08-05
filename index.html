@@ -496,10 +496,10 @@ form.addEventListener('submit', async function(e) {
     
     const submitBtn = form.querySelector('.submit-btn');
     
-    // Get form values using CORRECT IDs from your HTML
-    const legalType = document.getElementById('field-0').value;
-    const documentType = document.getElementById('field-1').value;
-    const pdfFile = document.getElementById('field-2').files[0];
+    // Get form values using form field names (since IDs might not exist)
+    const legalType = document.querySelector('select[name="field-0"]').value;
+    const documentType = document.querySelector('select[name="field-1"]').value;
+    const pdfFile = document.querySelector('input[name="field-2"]').files[0];
     
     // Validate all fields
     if (!legalType || !documentType || !pdfFile) {
@@ -513,7 +513,8 @@ form.addEventListener('submit', async function(e) {
     // Use the exact field names from your HTML form
     formData.append('field-0', legalType);
     formData.append('field-1', documentType);
-    formData.append('field-2', pdfFile, pdfFile.name);
+    // CRITICAL: Use 'pdf' as the field name for the binary file (required by n8n Google Gemini node)
+    formData.append('pdf', pdfFile, pdfFile.name);
     
     // Add the extra fields that n8n automatically includes
     formData.append('formMode', 'production');
@@ -549,9 +550,9 @@ form.addEventListener('submit', async function(e) {
     }
 });
 
-// File upload handling - Updated to use correct ID
+// File upload handling - Updated to use name selector
 const fileUploadArea = document.getElementById('fileUploadArea');
-const fileInput = document.getElementById('field-2'); // Changed from 'pdfFile' to 'field-2'
+const fileInput = document.querySelector('input[name="field-2"]'); // Changed to use name selector
 const filePreview = document.getElementById('filePreview');
 const fileName = document.getElementById('fileName');
 const fileSize = document.getElementById('fileSize');
