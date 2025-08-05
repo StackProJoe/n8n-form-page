@@ -462,6 +462,7 @@
     </div>
 
     <script>
+        
         // Form validation and styling
         const selects = document.querySelectorAll('.form-select');
         const form = document.getElementById('legalForm');
@@ -487,6 +488,11 @@
                     }
                 }
             });
+        });
+        // Submit to n8n webhook
+        const response = await fetch('https://n8nf.stackhomelab.com/form/d73510bd-3ca5-4822-b155-3d9c3095e1ae', {
+            method: 'POST',
+            body: formData
         });
 
         // Form submission
