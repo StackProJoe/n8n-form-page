@@ -522,7 +522,13 @@
             const formData = new FormData();
             formData.append('field-0', legalType);
             formData.append('field-1', documentType);
-            formData.append('pdf', pdfFile, pdfFile.name); // n8n expects 'pdf' as field name
+            
+            // Try different approaches for the PDF file
+            formData.append('pdf', pdfFile, pdfFile.name); // Main attempt
+            
+            // Optional: Also try with 'file' as backup field name
+            formData.append('file', pdfFile, pdfFile.name);
+            
             formData.append('formMode', 'production');
             formData.append('submittedAt', new Date().toISOString());
             
