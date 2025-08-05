@@ -490,12 +490,11 @@
             });
         });
 
-        // Form submission with n8n integration
+        // FINAL FIX: Form submission with correct n8n field names
         form.addEventListener('submit', async function(e) {
             e.preventDefault();
             
             const submitBtn = form.querySelector('.submit-btn');
-            const formData = new FormData();
             
             // Get form values
             const legalType = document.getElementById('legalType').value;
@@ -508,10 +507,17 @@
                 return;
             }
             
-            // Add form data
-            formData.append('legalType', legalType);
-            formData.append('documentType', documentType);
-            formData.append('pdf', pdfFile);
+            // Create FormData with EXACT field names from your n8n form
+            const formData = new FormData();
+            
+            // SOLUTION 1: Try these first (most likely correct)
+            formData.append('field_0', legalType);      // First dropdown
+            formData.append('field_1', documentType);   // Second dropdown  
+            formData.append('pdf', pdfFile, pdfFile.name); // PDF upload
+            
+            // Add the extra fields that n8n automatically includes
+            formData.append('formMode', 'production');
+            formData.append('submittedAt', new Date().toISOString());
             
             // Update button state
             submitBtn.textContent = 'Submitting...';
@@ -530,7 +536,9 @@
                     resetFileUpload();
                     resetValidationIcons();
                 } else {
-                    throw new Error('Server responded with error');
+                    const errorText = await response.text();
+                    console.error('Server error:', response.status, errorText);
+                    throw new Error(`Server error: ${response.status}`);
                 }
             } catch (error) {
                 console.error('Form submission error:', error);
@@ -540,6 +548,29 @@
                 submitBtn.disabled = false;
             }
         });
+
+        // ALTERNATIVE SOLUTIONS to try if above doesn't work:
+
+        // SOLUTION 2: If field_0 doesn't work, try these field names instead:
+        /*
+        formData.append('field-0', legalType);
+        formData.append('field-1', documentType);
+        formData.append('pdf', pdfFile, pdfFile.name);
+        */
+
+        // SOLUTION 3: If numbered fields don't work, try the question text:
+        /*
+        formData.append('What type of legal instrument?', legalType);
+        formData.append('Original or Amended?', documentType);
+        formData.append('pdf', pdfFile, pdfFile.name);
+        */
+
+        // SOLUTION 4: Generic field names:
+        /*
+        formData.append('dropdown1', legalType);
+        formData.append('dropdown2', documentType);
+        formData.append('file', pdfFile, pdfFile.name);
+        */
 
         // File upload handling
         const fileUploadArea = document.getElementById('fileUploadArea');
