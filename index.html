@@ -526,19 +526,20 @@
                 lastModified: pdfFile.lastModified
             });
             
-            // Create FormData exactly like n8n's webform would
+            // Create FormData to match EXACTLY what n8n's form sends
             const formData = new FormData();
             
-            // Add form fields first
-            formData.append('field-0', legalType);
-            formData.append('field-1', documentType);
+            // Add form fields with exact field names from working example
+            formData.append('What type of legal instrument?', legalType);
+            formData.append('Original or Amended?', documentType);
             
-            // Add the PDF file without explicit filename (let browser handle it)
+            // Add the PDF file with the EXACT structure that works
             formData.append('pdf', pdfFile);
             
-            // Don't add these extra fields - they might interfere
-            // formData.append('formMode', 'production');
-            // formData.append('submittedAt', new Date().toISOString());
+            // Add the extra fields that n8n includes
+            formData.append('submittedAt', new Date().toISOString());
+            formData.append('formMode', 'test'); // Use 'test' like the working example
+            formData.append('CombinedInstrumentType', `${legalType} ${documentType}`);
             
             // Debug: Log FormData contents
             console.log('FormData contents:');
