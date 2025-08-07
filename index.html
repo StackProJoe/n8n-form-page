@@ -439,7 +439,7 @@
                             <strong>Click to upload</strong> or drag and drop
                         </div>
                         <div class="upload-subtext">PDF files only (Max 10MB)</div>
-                        <input type="file" id="pdfFile" accept=".pdf" hidden required>
+                        <input type="file" id="pdfFile" name="pdf" accept=".pdf" style="display: none;" required>
                     </div>
                     <div class="file-preview" id="filePreview" style="display: none;">
                         <div class="file-info">
@@ -542,9 +542,29 @@
             
             // Create FormData with exact field names matching n8n configuration
             const formData = new FormData();
+            
+            // Debug the file object before appending
+            console.log('PDF File before append:', pdfFile);
+            
+            // Append form fields in order
             formData.append('What type of legal instrument?', legalType);
             formData.append('Original or Amended?', documentType);
-            formData.append('pdf', pdfFile, pdfFile.name);
+            
+            // Special handling for PDF file
+            if (pdfFile) {
+                try {
+                    // Create a new File instance to ensure proper file handling
+                    const file = new File([pdfFile], pdfFile.name, {
+                        type: pdfFile.type,
+                        lastModified: pdfFile.lastModified
+                    });
+                    formData.append('pdf', file);
+                    console.log('PDF File successfully appended');
+                } catch (error) {
+                    console.error('Error creating File object:', error);
+                    formData.append('pdf', pdfFile); // Fallback to direct append
+                }
+            }
 
             // Debug: Log the FormData contents
             console.log('=== FORM DATA DEBUG ===');
