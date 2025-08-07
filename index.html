@@ -571,14 +571,17 @@
                 console.log('=== DATA BEING SENT ===');
                 console.log('JSON data:', jsonData);
 
-                // Send the request
+                // Send the request with CORS headers
                 const response = await fetch('https://n8nf.stackhomelab.com/webhook-test/12850ebc-fa14-41f5-86e2-61240a674740', {
                     method: 'POST',
                     body: JSON.stringify(jsonData),
                     headers: {
                         'Content-Type': 'application/json',
-                        'Accept': 'application/json'
-                    }
+                        'Accept': 'application/json',
+                        'Origin': window.location.origin
+                    },
+                    mode: 'cors',
+                    credentials: 'omit'
                 });
 
                 console.log('Response status:', response.status);
