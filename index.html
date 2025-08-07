@@ -522,15 +522,23 @@
                 // Create FormData
                 const formData = new FormData();
                 
-                // Add each field individually (no JSON wrapping)
-                formData.append('What type of legal instrument?', legalInstrument);
-                formData.append('Original or Amended?', originalOrAmended);
+                // Create the data array with a single object
+                const jsonData = [{
+                    'What type of legal instrument?': legalInstrument,
+                    'Original or Amended?': originalOrAmended,
+                    'pdf': {
+                        filename: pdfFile.name,
+                        mimetype: pdfFile.type,
+                        size: pdfFile.size
+                    },
+                    'formMode': 'production'
+                }];
                 
-                // Add the file directly with the 'pdf' field name
-                formData.append('pdf', pdfFile);
+                // Append the JSON data
+                formData.append('data', JSON.stringify(jsonData));
                 
-                // Add form mode
-                formData.append('formMode', 'production');
+                // Append the file
+                formData.append('files.pdf', pdfFile, pdfFile.name);
             
             // Debug: Extensive file information
             console.log('=== FILE DEBUG INFO ===');
@@ -589,7 +597,10 @@
                 // Send the request
                 const response = await fetch('https://n8nf.stackhomelab.com/form/d73510bd-3ca5-4822-b155-3d9c3095e1ae', {
                     method: 'POST',
-                    body: formData
+                    body: formData,
+                    headers: {
+                        'Accept': 'application/json'
+                    }
                 });
 
                 console.log('Response status:', response.status);
