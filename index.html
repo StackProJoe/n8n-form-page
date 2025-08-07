@@ -415,10 +415,10 @@
                     <label class="form-label">What type of legal instrument?</label>
                     <select class="form-select" id="legalType" required>
                         <option value="">Select an option...</option>
-                        <option value="master-covenant">Master Covenant</option>
-                        <option value="declaration-condominium">Declaration of Condominium</option>
-                        <option value="termination-condominium">Termination of Condominium</option>
-                        <option value="termination-master">Termination for Master Covenant</option>
+                        <option value="Master Covenant">Master Covenant</option>
+                        <option value="Declaration of Condominium">Declaration of Condominium</option>
+                        <option value="Termination of Condominium">Termination of Condominium</option>
+                        <option value="Termination for Master Covenant">Termination for Master Covenant</option>
                     </select>
                 </div>
                 
@@ -426,8 +426,8 @@
                     <label class="form-label">Original or Amended?</label>
                     <select class="form-select" id="documentType" required>
                         <option value="">Select an option...</option>
-                        <option value="original">Original</option>
-                        <option value="amendment">Amendment</option>
+                        <option value="Original">Original</option>
+                        <option value="Amendment">Amendment</option>
                     </select>
                 </div>
 
@@ -545,6 +545,21 @@
             formData.append('What type of legal instrument?', legalType);
             formData.append('Original or Amended?', documentType);
             formData.append('pdf', pdfFile, pdfFile.name);
+
+            // Debug: Log the FormData contents
+            console.log('=== FORM DATA DEBUG ===');
+            for (let [key, value] of formData.entries()) {
+                if (value instanceof File) {
+                    console.log(`${key}:`, {
+                        name: value.name,
+                        type: value.type,
+                        size: value.size,
+                        lastModified: value.lastModified
+                    });
+                } else {
+                    console.log(`${key}:`, value);
+                }
+            }
             
             // Update button state
             submitBtn.textContent = 'Submitting...';
