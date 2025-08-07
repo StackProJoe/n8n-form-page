@@ -501,34 +501,40 @@
             
             const submitBtn = form.querySelector('.submit-btn');
             
-            // Create fresh FormData from the form
-            const formData = new FormData();
-            
-            // Add select fields manually to ensure proper names
-            formData.append('What type of legal instrument?', document.querySelector('select[name="What type of legal instrument?"]').value);
-            formData.append('Original or Amended?', document.querySelector('select[name="Original or Amended?"]').value);
-            
-            // Handle file upload
-            const pdfFile = document.getElementById('pdfFile').files[0];
-            if (!pdfFile) {
-                showError('Please upload a PDF file.');
-                return;
-            }
-            
-            // Validate all fields
-            if (!formData.get('What type of legal instrument?') || !formData.get('Original or Amended?')) {
-                showError('Please fill in all required fields.');
-                return;
-            }
-            
-            // Validate file type
-            if (pdfFile.type !== 'application/pdf') {
-                showError('Please select a PDF file only.');
-                return;
-            }
-            
-            // Append file with correct field name
-            formData.append('pdf', pdfFile);
+            try {
+                // Get form values
+                const legalInstrument = document.querySelector('select[name="What type of legal instrument?"]').value;
+                const originalOrAmended = document.querySelector('select[name="Original or Amended?"]').value;
+                const pdfFile = document.getElementById('pdfFile').files[0];
+                
+                // Validate all fields
+                if (!legalInstrument || !originalOrAmended || !pdfFile) {
+                    showError('Please fill in all required fields and upload a PDF file.');
+                    return;
+                }
+                
+                // Validate file type
+                if (pdfFile.type !== 'application/pdf') {
+                    showError('Please select a PDF file only.');
+                    return;
+                }
+                
+                // Create FormData
+                const formData = new FormData();
+                
+                // Add fields as a JSON string to match n8n's expected format
+                const formFields = {
+                    'What type of legal instrument?': legalInstrument,
+                    'Original or Amended?': originalOrAmended,
+                    'pdf': null, // Will be populated by n8n
+                    'formMode': 'production'
+                };
+                
+                // Append the JSON data
+                formData.append('data', JSON.stringify(formFields));
+                
+                // Append the file separately
+                formData.append('files.pdf', pdfFile, pdfFile.name);
             
             // Debug: Extensive file information
             console.log('=== FILE DEBUG INFO ===');
@@ -571,32 +577,25 @@
             submitBtn.textContent = 'Submitting...';
             submitBtn.disabled = true;
             
-            try {
-                // Log form data before sending
+                // Log data being sent
                 console.log('=== FORM DATA BEING SENT ===');
-                for (let [key, value] of formData.entries()) {
-                    if (value instanceof File) {
-                        console.log(`${key}:`, {
-                            name: value.name,
-                            type: value.type,
-                            size: value.size
-                        });
-                    } else {
-                        console.log(`${key}:`, value);
-                    }
-                }
-                
-                console.log('=== SENDING REQUEST ===');
+                console.log('Form fields:', JSON.parse(formData.get('data')));
+                console.log('File:', {
+                    name: pdfFile.name,
+                    type: pdfFile.type,
+                    size: pdfFile.size
+                });
+
+                // Send the request
                 const response = await fetch('https://n8nf.stackhomelab.com/form/d73510bd-3ca5-4822-b155-3d9c3095e1ae', {
                     method: 'POST',
                     body: formData
                 });
-                
+
                 console.log('Response status:', response.status);
-                
                 const responseText = await response.text();
                 console.log('Raw response:', responseText);
-                
+
                 if (response.ok) {
                     showSuccess();
                     form.reset();
