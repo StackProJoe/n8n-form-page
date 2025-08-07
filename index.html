@@ -501,13 +501,12 @@
             
             const submitBtn = form.querySelector('.submit-btn');
             
-            // Get form values using correct IDs from HTML
-            const legalType = document.getElementById('legalType').value;
-            const documentType = document.getElementById('documentType').value;
+            // Get form data directly from the form
+            const formData = new FormData(form);
             const pdfFile = document.getElementById('pdfFile').files[0];
             
             // Validate all fields
-            if (!legalType || !documentType || !pdfFile) {
+            if (!formData.get('What type of legal instrument?') || !formData.get('Original or Amended?') || !pdfFile) {
                 showError('Please fill in all fields and upload a PDF file.');
                 return;
             }
@@ -540,22 +539,6 @@
                 console.error('Error reading file:', error);
             }
             
-            // Create FormData directly from the form element
-            const formData = new FormData(form);
-            
-            // Debug the form data
-            console.log('=== FORM DATA DEBUG ===');
-            for (let [key, value] of formData.entries()) {
-                if (value instanceof File) {
-                    console.log(`${key}:`, {
-                        name: value.name,
-                        type: value.type,
-                        size: value.size
-                    });
-                } else {
-                    console.log(`${key}:`, value);
-                }
-
             // Debug: Log the FormData contents
             console.log('=== FORM DATA DEBUG ===');
             for (let [key, value] of formData.entries()) {
