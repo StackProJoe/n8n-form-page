@@ -522,19 +522,15 @@
                 // Create FormData
                 const formData = new FormData();
                 
-                // Add fields as a JSON string to match n8n's expected format
-                const formFields = {
-                    'What type of legal instrument?': legalInstrument,
-                    'Original or Amended?': originalOrAmended,
-                    'pdf': null, // Will be populated by n8n
-                    'formMode': 'production'
-                };
+                // Add each field individually (no JSON wrapping)
+                formData.append('What type of legal instrument?', legalInstrument);
+                formData.append('Original or Amended?', originalOrAmended);
                 
-                // Append the JSON data
-                formData.append('data', JSON.stringify(formFields));
+                // Add the file directly with the 'pdf' field name
+                formData.append('pdf', pdfFile);
                 
-                // Append the file separately
-                formData.append('files.pdf', pdfFile, pdfFile.name);
+                // Add form mode
+                formData.append('formMode', 'production');
             
             // Debug: Extensive file information
             console.log('=== FILE DEBUG INFO ===');
@@ -579,11 +575,15 @@
             
                 // Log data being sent
                 console.log('=== FORM DATA BEING SENT ===');
-                console.log('Form fields:', JSON.parse(formData.get('data')));
-                console.log('File:', {
-                    name: pdfFile.name,
-                    type: pdfFile.type,
-                    size: pdfFile.size
+                console.log('Form data:', {
+                    'What type of legal instrument?': formData.get('What type of legal instrument?'),
+                    'Original or Amended?': formData.get('Original or Amended?'),
+                    'pdf': {
+                        filename: pdfFile.name,
+                        mimetype: pdfFile.type,
+                        size: pdfFile.size
+                    },
+                    'formMode': formData.get('formMode')
                 });
 
                 // Send the request
