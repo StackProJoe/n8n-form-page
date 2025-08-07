@@ -519,26 +519,18 @@
                     return;
                 }
                 
-                // Create FormData
-                const formData = new FormData();
-                
-                // Create the data array with a single object
-                const jsonData = [{
+                // Create the request payload
+                const jsonData = {
                     'What type of legal instrument?': legalInstrument,
                     'Original or Amended?': originalOrAmended,
                     'pdf': {
                         filename: pdfFile.name,
                         mimetype: pdfFile.type,
-                        size: pdfFile.size
+                        size: pdfFile.size,
+                        data: await pdfFile.arrayBuffer().then(buffer => Array.from(new Uint8Array(buffer)))
                     },
                     'formMode': 'production'
-                }];
-                
-                // Append the JSON data
-                formData.append('data', JSON.stringify(jsonData));
-                
-                // Append the file
-                formData.append('files.pdf', pdfFile, pdfFile.name);
+                };
             
             // Debug: Extensive file information
             console.log('=== FILE DEBUG INFO ===');
@@ -562,43 +554,29 @@
                 console.error('Error reading file:', error);
             }
             
-            // Debug: Log the FormData contents
-            console.log('=== FORM DATA DEBUG ===');
-            for (let [key, value] of formData.entries()) {
-                if (value instanceof File) {
-                    console.log(`${key}:`, {
-                        name: value.name,
-                        type: value.type,
-                        size: value.size,
-                        lastModified: value.lastModified
-                    });
-                } else {
-                    console.log(`${key}:`, value);
-                }
-            }
+            // Debug: Log the file info
+            console.log('=== FILE INFO ===');
+            console.log('PDF File:', {
+                name: pdfFile.name,
+                type: pdfFile.type,
+                size: pdfFile.size,
+                lastModified: pdfFile.lastModified
+            });
             
             // Update button state
             submitBtn.textContent = 'Submitting...';
             submitBtn.disabled = true;
             
                 // Log data being sent
-                console.log('=== FORM DATA BEING SENT ===');
-                console.log('Form data:', {
-                    'What type of legal instrument?': formData.get('What type of legal instrument?'),
-                    'Original or Amended?': formData.get('Original or Amended?'),
-                    'pdf': {
-                        filename: pdfFile.name,
-                        mimetype: pdfFile.type,
-                        size: pdfFile.size
-                    },
-                    'formMode': formData.get('formMode')
-                });
+                console.log('=== DATA BEING SENT ===');
+                console.log('JSON data:', jsonData);
 
                 // Send the request
-                const response = await fetch('https://n8nf.stackhomelab.com/form/d73510bd-3ca5-4822-b155-3d9c3095e1ae', {
+                const response = await fetch('https://n8nf.stackhomelab.com/webhook-test/435fda48-fe95-4444-80c7-8429c52d563b', {
                     method: 'POST',
-                    body: formData,
+                    body: JSON.stringify(jsonData),
                     headers: {
+                        'Content-Type': 'application/json',
                         'Accept': 'application/json'
                     }
                 });
